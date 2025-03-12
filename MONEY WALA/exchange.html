@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Nearby Persons</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="styles/exchange.css">
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1><b>Find Person</b></h1>
+        <h3>Select a person from the provided list after clicking 'Search'</h3>
+        <form id="locationForm" class="form-container">
+            <input type="text" id="city" class="form-control" placeholder="Enter City">
+            <input type="number" id="radius" class="form-control" placeholder="Enter Distance Radius (in km)" min="1">
+            <input type="number" id="money" class="form-control" placeholder="Enter Amount" min="100" step="100">
+            <div>
+                <label>
+                    <input type="radio" name="transactionType" value="upiToCash" required> UPI to Cash
+                </label>
+                <label>
+                    <input type="radio" name="transactionType" value="cashToUpi" required> Cash to UPI
+                </label>
+            </div>
+            <div>
+                <button type="submit">Search</button>
+            </div>
+        </form>
+        
+        <div id="map"></div>
+        <ul id="results"></ul>
+    </div>
+
+    <div class="loading-spinner" id="loadingSpinner"></div>
+
+    <!-- Link to the external JS file -->
+    <script src="scripts/exchange.js"></script>
+</body>
+</html>

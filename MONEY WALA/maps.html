@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Nearby Places</title>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+    <h1>Find Nearby Places</h1>
+    <form id="locationForm">
+        <label for="city">Enter City Name:</label>
+        <input type="text" id="city" placeholder="e.g., Bengaluru" required>
+        <label for="radius">Radius (in km):</label>
+        <input type="number" id="radius" placeholder="e.g., 50" required>
+        <button type="submit">Find Nearby Places</button>
+    </form>
+
+    <div id="map"></div>
+    <ul id="results"></ul>
+
+    <script>
+        const form = document.getElementById('locationForm');
+        const mapElement = document.getElementById('map');
+        const resultsElement = document.getElementById('results');
+
+        let map;
+
+        // Initialize the map
+        function initializeMap(lat, lng) {
+            if (!map) {
+                map = L.map(mapElement).setView([lat, lng], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+            } else {
+                map.setView([lat, lng], 10);
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const city = document.getElementById('city').value;
+            const radius = parseInt(document.getElementById('radius').value) * 1000;
+
+            try {
+                // Step 1: Get Lat/Lng of the city using Nominatim API
+                const geocodeResponse = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json`);
+                const geocodeData = await geocodeResponse.json();
+                if (geocodeData.length === 0) throw new Error('City not found');
+
+                const { lat, lon } = geocodeData[0];
+                initializeMap(lat, lon);
+
+                // Step 2: Find nearby places using Overpass API
+                const overpassQuery = `
+                    [out:json];
+                    node(around:${radius},${lat},${lon})[place~"village|town|city"];
+                    out body;
+                `;
+                const overpassResponse = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`);
+                const overpassData = await overpassResponse.json();
+
+                if (overpassData.elements.length === 0) {
+                    resultsElement.innerHTML = '<li>No places found in this radius.</li>';
+                    return;
+                }
+
+                // Step 3: Randomly select 3 to 5 places
+                const randomPlaces = overpassData.elements
+                    .sort(() => Math.random() - 0.5) // Shuffle array
+                    .slice(0, Math.floor(Math.random() * 3) + 4); // Pick 3 to 5 random places
+
+                resultsElement.innerHTML = randomPlaces
+                    .map((place) => `<li>${place.tags.name || 'Unknown'} (${place.tags.place})</li>`)
+                    .join('');
+
+                randomPlaces.forEach((place) => {
+                    if (place.lat && place.lon) {
+                        L.marker([place.lat, place.lon])
+                            .addTo(map)
+                            .bindPopup(`<strong>${place.tags.name || 'Unknown'}</strong><br>Type: ${place.tags.place}`);
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                resultsElement.innerHTML = `<li>Error: ${error.message}</li>`;
+            }
+        });
+    </script>
+</body>
+</html>
