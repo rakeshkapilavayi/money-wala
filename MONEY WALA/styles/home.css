@@ -45,7 +45,7 @@ html {
   font-family: 'Poppins', sans-serif; /* Modern font */
   font-size: 22px; /* Larger text size for emphasis */
   font-weight: 700; /* Bold text */
-  background: linear-gradient(90deg, #ff7f50, #1e90ff); /* Gradient background */
+  background: black; /* Gradient background */
   background-clip: text; /* Standard property for modern browsers */
   -webkit-background-clip: text; /* Vendor prefix for older WebKit browsers */
   -webkit-text-fill-color: transparent; /* Required for WebKit browsers */
